@@ -1,0 +1,3 @@
+---
+firewalld_service: "{{ secret.firewalld_service }}"
+firewalld_rich_rules: "{{ secret.firewalld_rich_rules }}"

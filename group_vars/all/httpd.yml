@@ -1,0 +1,21 @@
+---
+# WEB USER
+web_user: "{{ users.webuser }}"
+
+httpd_document_root: '/var/www'
+httpd_public_dir: '/html'
+
+#commonName
+ca_CN: "{{ secret.ca_CN }}"
+#countryName
+ca_C: "{{ secret.ca_C }}"
+#emailAddress
+ca_EMail: "{{ secret.ca_EMail }}"
+#localityName
+ca_L: "{{ secret.ca_L }}"
+#organizationName
+ca_O: "{{ secret.ca_O }}"
+#organizationalUnitName
+ca_OU: "{{ secret.ca_OU }}"
+#stateOrProvinceName
+ca_ST: "{{ secret.ca_ST }}"

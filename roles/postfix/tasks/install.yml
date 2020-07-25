@@ -1,0 +1,150 @@
+---
+# tasks file for roles/postfix
+
+- name: check installed postfix
+  shell: bash -lc "postconf | grep mail_version"
+  register: postfix_exists
+  changed_when: False
+  ignore_errors: yes
+
+- name: debug
+  debug:
+    msg: "{{ postfix_exists }}"
+
+
+- name: install postfix
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - 'postfix'
+    - 'mailx'
+    - 'cyrus-sasl'
+    - 'cyrus-sasl-plain'
+  when: postfix_exists is failed
+
+- name: Check Installed httpd_can_sendmail
+  become: True
+  shell: "getsebool  httpd_can_sendmail | awk '{print  $3}'"
+  register: httpd_can_sendmail
+  changed_when: False
+  ignore_errors: yes
+
+- name: selinux option setting httpd_can_sendmail=on
+  become: true
+  shell: |
+    setsebool -P httpd_can_sendmail=on
+  when:
+    - httpd_can_sendmail.stdout != 'on'
+    - postfix_exists is failed
+
+#- name: Start postfix
+#  become: true
+#  service:
+#    name: postfix
+#    state: started
+#    enabled: yes
+#
+-
+- name: Set myhostname
+  become: true
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    insertafter: "^#myhostname = virtual.domain.tld"
+    line: "myhostname = {{ secret.postfix.smtp_myhostname}}"
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+- name: Set mydomain
+  become: true
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    insertafter: "^#mydomain = domain.tld"
+    line: "mydomain = {{ secret.postfix.smtp_mydomain}}"
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+- name: Set myorigin
+  become: true
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    #regexp: "^#myorigin = "
+    insertafter: "^#myorigin.*mydomain$"
+    line: "myorigin = $mydomain"
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+- name: Set inet_protocols
+  become: true
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: "^inet_protocols = all"
+    line: "inet_protocols = ipv4"
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+- name: Set comment out default mydestination
+  become: true
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: '^mydestination'
+    insertafter: "^#mydestination"
+    line: 'mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain'
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+- name: Set smtp_sasl_auth
+  become: true
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      relayhost = [{{ secret.postfix.smtp_host}}]:{{ secret.postfix.smtp_port}}
+      smtp_sasl_auth_enable = yes
+      smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+      smtp_sasl_mechanism_filter = plain
+      smtp_use_tls = yes
+      smtp_sasl_tls_security_options = noanonymous
+      smtp_tls_CApath = /etc/pki/tls/certs/ca-bundle.crt
+    insertbefore: "^# REJECTING UNKNOWN RELAY USERS"
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+- name: Set smtp_auth info
+  become: true
+  template:
+    src: templates/sasl_passwd.j2
+    dest: "/etc/postfix/sasl_passwd"
+  register: status_sasl_passwd
+  notify: Restart postfix
+  when: postfix_exists is failed
+
+#- name: sasl_pass status
+#  debug:
+#    msg: "{{ status_sasl_passwd }}"
+
+- name: Exec postmap
+  become: true
+  shell: bash -lc "postmap /etc/postfix/sasl_passwd"
+  notify: Restart postfix
+  when: status_sasl_passwd.changed == true
+  when: postfix_exists is failed
+
+#- name: Set mydestination
+#  become: true
+#  lineinfile:
+#    dest: /etc/postfix/main.cf
+#    regexp: "^#mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,"
+#    line:     "mydestination = $myhostname, localhost.$mydomain, localhost"
+#  notify: Restart postfix
+
+#mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+
+#- name: Disable root login
+#  become: true
+#  lineinfile:
+#    dest: /etc/ssh/sshd_config
+#    regexp: "^PermitRootLogin"
+#    insertafter: "^#PermitRootLogin"
+#    line: "PermitRootLogin no"
+#  notify: Restart sshd

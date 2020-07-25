@@ -1,0 +1,52 @@
+---
+#- name: check installed certbot
+#  become: true
+#  stat:
+#    path: "/usr/bin/certbot-auto"
+#  register: chk_certbot
+#  changed_when: False
+#  ignore_errors: yes
+#
+#- name: Install certbot
+#  become: true
+#  get_url:
+#    url: "https://dl.eff.org/certbot-auto"
+#    dest: "/usr/bin/"
+#    mode: 755
+#  when: chk_certbot.stat.exists == false
+
+- name: check installed cerbot
+  shell: bash -lc "certbot --version"
+  register: certbot_exists
+  changed_when: False
+  ignore_errors: yes
+
+
+- name: install epel-release
+  become: true
+  yum:
+    name: epel-release
+    state: present
+    #when:
+    #  - certbot_exists is failed
+
+- name: Install certbot,certbot-apache
+  become: true
+  yum: name=certbot,certbot-apache state=present
+
+- name: Install python-certbot-apache
+  become: true
+  yum: name=python-certbot-apache state=present
+
+- name: Set config to stop and restart with running certbot
+  become: yes
+  replace:
+    dest: /etc/sysconfig/certbot
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+    backup: yes
+  with_items:
+    - {'regexp' : '^PRE_HOOK=""$', 'replace' : 'PRE_HOOK="--pre-hook ''systemctl stop httpd''"'}
+    - {'regexp' : '^POST_HOOK=""$', 'replace' : 'POST_HOOK="--post-hook ''systemctl restart httpd''"'}
+    - {'regexp' : '^RENEW_HOOK=""$', 'replace' : 'RENEW_HOOK="--renew-hook ''systemctl restart httpd''"'}
+

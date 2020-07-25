@@ -1,0 +1,18 @@
+---
+# tasks file for common
+- include: "{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}.yml"
+
+- name: Check Installed httpd_can_network_connect
+  become: True
+  shell: "timedatectl | grep 'Time zone' | awk '{print  $3}'"
+  register: time_zone
+  changed_when: False
+  ignore_errors: yes
+
+- name: Install tools
+  become: true
+  shell: |
+    timedatectl set-timezone "{{ os_time_zone }}"
+  when:
+     - time_zone.stdout != "{{ os_time_zone }}"
+

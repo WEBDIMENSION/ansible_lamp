@@ -1,0 +1,10 @@
+---
+# defaults file for roles/postfix
+smtp_host: "smtp.xxx.com"
+smtp_port: "587"
+smtp_user: "account@xxxx.com"
+smtp_password: "smtp_password"
+smtp_myhostname: "mail.xxx.com"
+smtp_mydomain: "xxx.com"
+smtp_inet_interfaces: "localhost"
+smtp_inet_protocols: "ipv4"

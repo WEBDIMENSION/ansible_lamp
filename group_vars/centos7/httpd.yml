@@ -1,0 +1,4 @@
+---
+httpd_dependencies:
+  - httpd
+

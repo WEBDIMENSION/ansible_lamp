@@ -1,0 +1,67 @@
+---
+- name: webdimension
+  hosts: lamp
+  vars:
+  vars_files:
+  roles:
+    - role: ansible-user
+      tags:
+        - ansible-user
+        - init
+
+    - role: sshd
+      tags:
+        - sshd
+        - init
+
+    - role: hostname
+      tags:
+        - hostname
+
+    - role: common
+      tags:
+        - common
+
+    - role: zip
+      tags:
+        - zip
+
+    - role: selinux
+      tags:
+        - selinux
+
+    - role: users
+      tags:
+        - users
+
+    - role: git
+      tags:
+        - git
+
+    - role: crond
+      tags:
+        - crond
+
+    - role: letsencrypt
+      tags:
+        - letsencrypt
+
+    - role: httpd
+      tags:
+        - httpd
+
+    - role: php
+      tags:
+        - php
+
+    - role: mysql57
+      tags:
+        - mysql57
+
+    - role: postfix
+      tags:
+        - postfix
+
+    - role: firewalld
+      tags:
+        - firewalld

@@ -1,0 +1,22 @@
+---
+#crontab:
+#  worker001:
+#    name: 'worker test_001'
+#    state: 'present'
+#    user: 'root'
+#    minute: "0"
+#    hour: "12"
+#    day: "1"
+#    month: "*"
+#    weekday: "*"
+#    job: "cd / && ls -la"
+#  worker002:
+#    name: 'worker test_002'
+#    state: 'present'
+#    user: 'root'
+#    minute: "0"
+#    hour: "12"
+#    day: "1"
+#    month: "*"
+#    weekday: "*"
+#    job: "cd / && ls -la"

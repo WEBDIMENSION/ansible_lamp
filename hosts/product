@@ -1,0 +1,20 @@
+[lamp]
+Product-CentOS7-Init ansible_host=111.222.333.xxx #your server ip
+Product-CentOS7
+
+[product]
+Product-CentOS7-Init
+Product-CentOS7
+
+[centos7]
+Product-CentOS7-Init
+Product-CentOS7
+
+[centos8]
+
+[Product_CentOS7_Init]
+Product-CentOS7-Init
+[Product_CentOS7_Init:vars]
+ansible_ssh_user=root
+ansible_port=22
+ansible_ssh_pass={{ secret.root_user_password }}

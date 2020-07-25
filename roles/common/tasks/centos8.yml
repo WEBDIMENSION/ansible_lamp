@@ -1,0 +1,42 @@
+---
+# tasks file for common
+# For CeotOS7
+- name: install epel
+  become: true
+  shell: |
+    dnf -y install epel-release
+
+- name: dnf update
+  become: true
+  shell: |
+    dnf -y update
+
+- name: Install tools
+  become: true
+  shell: |
+    dnf -y update
+    dnf -y groupinstall base
+    dnf -y groupinstall development
+    dnf -y groupinstall network-tools
+    dnf -y install bind-utils
+    dnf -y install gcc mod_ssl python3-virtualenv redhat-rpm-config augeas-libs libffi-devel openssl-devel
+
+- name: Install tools
+  become: true
+  dnf:
+    name: "python{{python_version}}"
+    state: 'present'
+
+- name: Install selinux
+  become: true
+  dnf:
+    name: "{{item}}"
+    state: 'installed'
+  with_items:
+    - selinux-policy-targeted
+    - setools
+
+- name: selinux option setting
+  become: true
+  shell: |
+    setsebool -P httpd_can_network_connect=on

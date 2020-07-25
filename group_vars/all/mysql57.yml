@@ -1,0 +1,19 @@
+---
+mysql57:
+  mysql_root_password: "{{ secret.mysql57_root_password }}"
+  repo_url: 'http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm'
+  databases:
+    worker1_db:
+      username:       "worker1"
+      password:       "root"
+      user_state:     "present"
+      host:           "localhost"
+      db_name:        'worker1'
+      db_state:       "present"
+    worker2_db:
+      username:       "worker2"
+      password:       "root"
+      user_state:     "present"
+      host:           "localhost"
+      db_name:        'worker2'
+      db_state:       "present"

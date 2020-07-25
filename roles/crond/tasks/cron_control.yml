@@ -1,0 +1,16 @@
+---
+- name:  Cron control
+  become: yes
+  cron:
+    name: " {{ item.value.name }}"
+    state: "{{ item.value.state }}"
+    user: "{{ item.value.user }}"
+    minute: "{{ item.value.minute }}"
+    hour: "{{ item.value.hour }}"
+    day: "{{ item.value.day }}"
+    month: "{{ item.value.month }}"
+    weekday: "{{ item.value.weekday }}"
+    job: "{{ item.value.job }}"
+  with_dict:
+    - "{{ crontab }}"
+  when: crontab is defined

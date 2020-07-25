@@ -1,0 +1,93 @@
+---
+# tasks file for roles/httpd
+# Install
+
+- name: check installed openssl
+  shell: bash -lc "openssl version"
+  register: openssl_exists
+  changed_when: False
+  ignore_errors: yes
+
+- name: install openssl
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - openssl
+  when:
+    - openssl_exists is failed
+  notify:
+    - Restart httpd
+
+- name: check installed httpd
+  shell: bash -lc "httpd -V"
+  register: httpd_exists
+  changed_when: False
+  ignore_errors: yes
+
+- name: install httpd
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    "{{ httpd_dependencies }}"
+  when:
+    - httpd_exists is failed
+  notify:
+    - Restart httpd
+
+- name: check installed mod_ssl
+  shell: bash -lc "httpd -M | grep ssl"
+  register: mod_ssl_exists
+  changed_when: False
+  ignore_errors: yes
+
+- name: install mod_ssl
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - mod_ssl
+  when:
+    - mod_ssl_exists is failed
+  notify:
+    - Restart httpd
+
+- name: Change permission Document Root
+  become: true
+  file:
+    path: "{{ httpd_document_root }}"
+    state: "directory"
+    owner: "{{ web_user.name }}"
+    group: "{{ web_user.name }}"
+    mode: "775"
+    recurse: yes
+  when:
+    - httpd_exists is failed
+  notify:
+    - Restart httpd
+
+- name: Make index.html
+  become: true
+  template:
+    src: templates/index.html.j2
+    dest: "{{ httpd_document_root }}{{ httpd_public_dir }}/index.html"
+    owner: "{{ web_user.name }}"
+    group: "{{ web_user.name }}"
+    mode: '0644'
+  when:
+    - httpd_exists is failed
+
+- name: Make phpinfo
+  become: true
+  template:
+    src: templates/phpinfo.php.j2
+    dest: "{{ httpd_document_root }}{{ httpd_public_dir }}/phpinfo.php"
+    owner: "{{ web_user.name }}"
+    group: "{{ web_user.name }}"
+    mode: '0644'
+  when:
+    - httpd_exists is failed

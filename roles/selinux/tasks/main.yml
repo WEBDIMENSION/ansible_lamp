@@ -1,0 +1,87 @@
+---
+# tasks file for roles/selinux
+- name: install policycoreutils-python
+  become: true
+  yum:
+    name: policycoreutils-python
+    state: present
+  tags: selinux
+#
+#- name: install policycoreutils-python
+#  become: true
+#  yum:
+#    name: "{{ item }}"
+#    state: present
+#  with_items:
+#    - selinux-policy-targeted
+#    - setools
+#
+#- name: Enable SELinux
+#  become: true
+#  selinux:
+#    policy: targeted
+#    state: enforcing
+#
+- name: Check SELinux Status
+  become: True
+  shell: getenforce
+  register: selinux_status
+  changed_when: False
+  tags: selinux
+
+- name: SELinux tool Download
+  become: True
+  yum: name=libselinux-python state=installed
+  when: selinux_status.stdout != 'Enforcing'
+  tags: selinux
+
+- name: SELinux enabal
+  become: True
+  selinux:
+    policy: targeted
+    state: enforcing
+  when: selinux_status.stdout != 'Enforcing'
+  tags: selinux
+
+- name: SELinux Reboot
+  become: True
+  shell: "sleep 2 && reboot"
+  async: 1
+  poll: 0
+  when: selinux_status.stdout != 'Enforcing'
+  tags: selinux
+
+- name: wait for reboot
+  wait_for_connection:
+    delay: 30
+
+#- name: after reboot
+#  debug:
+#   msg: 'after reboot'
+
+- name: Check Installed httpd_can_network_connect
+  become: True
+  shell: "getsebool  httpd_can_network_connect | awk '{print  $3}'"
+  register: httpd_can_network_connect
+  changed_when: False
+  ignore_errors: yes
+  tags: selinux
+
+#- name: Display status httpd_can_network_connect
+#  debug:
+#    msg: "{{ httpd_can_network_connect }}"
+#  tags: selinux
+#
+- name: selinux option setting
+  become: true
+  shell: |
+    setsebool -P httpd_can_network_connect=on
+  when: httpd_can_network_connect.stdout != 'on'
+  tags: selinux
+
+#- name: wait for the server to go down (reboot)
+#  become: True
+#  local_action: "wait_for host={{ inventory_hostname }} port={{ ssh_port }} state=stopped"
+#
+#- name: wait for the server to come up
+#  local_action: "wait_for host={{ inventory_hostname }} port={{ ssh_port }} delay=30"

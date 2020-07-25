@@ -1,0 +1,4 @@
+---
+# tasks file for roles/crond
+- include: "install_{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}.yml"
+- include: cron_control.yml

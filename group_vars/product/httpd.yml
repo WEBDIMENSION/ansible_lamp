@@ -1,0 +1,15 @@
+---
+letsencrypt: true
+letsencrypt_email: your_mailaddres
+crontab:
+  letsencrypt:
+    name: "letsencrypt {{ httpd_domain }}"
+    state: 'present'
+    user: 'root'
+    job: /bin/bash -lc "certbot certonly --force-renew --webroot -w {{ httpd_document_root }}{{ httpd_public_dir }} -d {{ httpd_domain }} --post-hook 'systemctl reload httpd' > /dev/null 2>&1"
+    minute: "0"
+    hour: "12"
+    day: "1"
+    month: "*"
+    weekday: "*"
+

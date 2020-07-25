@@ -1,0 +1,7 @@
+---
+mysql57_dependencies:
+  - MySQL-python
+  - mysql-community-server
+  - mysql
+  - mysql-devel
+  - mysql-utilities

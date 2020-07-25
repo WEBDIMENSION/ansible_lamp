@@ -1,0 +1,12 @@
+---
+# tasks file for crond
+# For CeotOS7
+- name: install crond
+  become: true
+  dnf:
+    name: cronie-noanacron
+    state: installed
+  notify:
+    - Restart crond
+
+

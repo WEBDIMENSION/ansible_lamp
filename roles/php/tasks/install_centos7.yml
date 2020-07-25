@@ -1,0 +1,58 @@
+---
+- name: check installed php
+  shell: bash -lc "php --version"
+  register: php_exists
+  changed_when: False
+  ignore_errors: yes
+
+- name: install epel-release
+  become: true
+  yum:
+    name: epel-release
+    state: present
+  when:
+    - php_exists is failed
+
+- name: check remi-release-7
+  become: true
+  stat: path=/etc/yum.repos.d/remi-php70.repo
+  register: remi_release_7
+
+- name: Install remi-release-7
+  become: true
+  yum:
+    name: "{{ remi_url }}"
+    state: latest
+  when: remi_release_7.stat.exists == false
+
+- name: Install php-fpm and deps
+  become: true
+  yum:
+    name: "{{ item }}"
+    enablerepo: "remi-php{{ php_version| replace('.', '') }}"
+    state: latest
+  with_items:
+    "{{ php_dependencies }}"
+  notify:
+    - httpd_restart
+  when:
+    - php_exists is failed
+
+- name: Configure PHP
+  become: true
+  ini_file:
+    path: /etc/php.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: "{{ item.backup }}"
+  with_items:
+    - { section: PHP, option: post_max_size, value: "{{ php.filesize }}", backup: true }
+    - { section: PHP, option: upload_max_filesize, value: "{{ php.filesize }}", backup: false }
+    - { section: Date, option: date.timezone, value: "{{ php.timezone }}", backup: false }
+    - { section: mbstring, option: mbstring.language, value: "{{ php.language }}", backup: false }
+    - { section: mbstring, option: mbstring.internal_encoding, value: "{{ php.internal_encoding }}", backup: false }
+    - { section: mbstring, option: mbstring.encoding_translation, value: "{{ php.encoding_translation }}", backup: false }
+    - { section: mbstring, option: mbstring.detect_order, value: "{{ php.detect_order }}", backup: false }
+  notify:
+    - httpd_restart

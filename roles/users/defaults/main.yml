@@ -1,0 +1,32 @@
+---
+# defaults file for roles/useradd
+# Require vars
+users:
+  develop_001:
+    name: 'develop_001'
+    groups: 'wheel,manager'
+    append: 'yes'
+    state: 'present'
+    remove: 'no'
+    password: "password"
+    public_key: "~/.ssh/ansible_rsa.pub"
+    login_shell: '/bin/bash'
+    create_home: 'yes'
+    sudo: 'absent'
+    comment: 'vh1 comment'
+    expires: '-1'
+    docker_group: true
+  develop_002:
+    name: 'develop_002'
+    groups: 'wheel,manager'
+    append: 'yes'
+    state: 'present'
+    remove: 'no'
+    password: "password"
+    public_key: "~/.ssh/ansible_rsa.pub"
+    login_shell: '/bin/bash'
+    create_home: 'yes'
+    sudo: 'present'
+    comment: 'vh1 comment'
+    expires: '-1'
+    docker_group: false

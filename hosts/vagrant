@@ -1,0 +1,12 @@
+[lamp]
+Vagrant-CentOS7
+
+[vagrant]
+Vagrant-CentOS7
+
+[centos7]
+Vagrant-CentOS7
+
+[centos8]
+Vagrant-CentOS8
+
